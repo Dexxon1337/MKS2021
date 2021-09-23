@@ -28,17 +28,19 @@ int main(void)
 {
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 	GPIOA->MODER |= GPIO_MODER_MODER5_0;
-	uint8_t pole[32] = { 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
+	uint32_t sequence = 0b0000000101010011001100110010101;
 	uint8_t counter = 0;
     /* Loop forever */
 	for(;;) {
-		if( pole[counter%32] ) {
-					GPIOA->BSRR = (1<<5);
-				}
-				else {
-					GPIOA->BRR = (1<<5);
-				}
-				counter++;
+
+		if( (1 << counter % 32) & sequence ) {
+			GPIOA->BSRR = (1<<5);
+		}
+		else {
+			GPIOA->BRR = (1<<5);
+		}
+		counter++;
+
 		for (volatile uint32_t i = 0; i < 100000; i++) {}
 	}
 }
