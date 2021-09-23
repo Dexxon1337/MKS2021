@@ -33,7 +33,7 @@ int main(void)
     /* Loop forever */
 	for(;;) {
 
-		if( (1 << counter % 32) & sequence ) {
+		if( (1 << (counter % 32)) & sequence ) {
 			GPIOA->BSRR = (1<<5);
 		}
 		else {
