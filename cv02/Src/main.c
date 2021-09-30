@@ -28,6 +28,8 @@
 #define LED_TIME_SHORT 100
 #define LED_TIME_LONG 1000
 #define SAMPLING_PERIOD 40
+#define DEBOUNCE_PERIOD 5
+
 volatile uint32_t tick;
 
 void SysTick_Handler(void)
@@ -46,29 +48,41 @@ void blikac(void)     {
 
 void tlacitka(void) {
 	static uint32_t sampling_time;
+	static uint32_t debounce_time;
+
 	static uint32_t off_time;
 
-	static uint32_t old_s1;
 	static uint32_t old_s2;
 
-	uint32_t new_s1 = GPIOC->IDR & (1<<1);
+	static uint16_t debounce = 0xFFFF;
+
 	uint32_t new_s2 = GPIOC->IDR & (1<<0);
+
+
 	if (tick > sampling_time + SAMPLING_PERIOD) {
 		if (old_s2 && !new_s2) { // falling edge
 			off_time = tick + LED_TIME_SHORT;
 			GPIOB->BSRR = (1<<0);
 		}
-		if (old_s1 && !new_s1) { // falling edge
+		old_s2 = new_s2;
+		sampling_time = tick;
+	}
+
+	if (tick > debounce_time + SAMPLING_PERIOD) {
+		debounce <<= 1;
+		if ( GPIOC->IDR & (1<<1) ) {
+			debounce = debounce | 0x0001;
+		}
+		debounce_time = tick;
+		if (debounce == 0x7FFF) {
 			off_time = tick + LED_TIME_LONG;
 			GPIOB->BSRR = (1<<0);
 		}
-		old_s1 = new_s1;
-		old_s2 = new_s2;
-		sampling_time = tick;
 	}
 	if (tick > off_time) {
 		GPIOB->BRR = (1<<0);
 	}
+
 }
 
 //void EXTI0_1_IRQHandler(void)
