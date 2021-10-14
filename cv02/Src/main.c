@@ -68,7 +68,7 @@ void tlacitka(void) {
 		sampling_time = tick;
 	}
 
-	if (tick > debounce_time + SAMPLING_PERIOD) {
+	if (tick > debounce_time + DEBOUNCE_PERIOD) {
 		debounce <<= 1;
 		if ( GPIOC->IDR & (1<<1) ) {
 			debounce = debounce | 0x0001;
@@ -79,6 +79,7 @@ void tlacitka(void) {
 			GPIOB->BSRR = (1<<0);
 		}
 	}
+
 	if (tick > off_time) {
 		GPIOB->BRR = (1<<0);
 	}
